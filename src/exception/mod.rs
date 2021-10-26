@@ -12,7 +12,7 @@ pub fn test_exception(createfile: bool) {
 
     let file = "./src/exception/hello.txt";
     let f = File::open(file);
-    let mut f = match f {
+    let f = match f {
         Ok(file) => file,
         Err(error) => {
             match error.kind() {
@@ -36,6 +36,8 @@ pub fn test_exception(createfile: bool) {
 pub fn test_unwarp_or_else() {
     // let f = File::open("hello.txt").unwrap();
     // left f = File::open("hello.txt").expect("Failed to open hello.txt");
+
+    // if 'open' 'result' is an 'error', then excecut expression in scope!
     let f = File::open("hello.txt").unwrap_or_else(|error| {
         if error.kind() == ErrorKind::NotFound {
             File::create("hello.txt").unwrap_or_else(|error| {
@@ -53,6 +55,7 @@ pub fn read_username_from_file(opt: Option<File>) -> result::Result<String, io::
         _ => File::open("./hello.txt")?,
     };
     let mut s = String::new();
+
     file.read_to_string(&mut s)?;
     Ok(s)
 }
