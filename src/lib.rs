@@ -60,62 +60,25 @@ mod tests {
         restaurant::run::eat_at_restaurant();
     }
 
-    use super::mini_grep::{search, search_case_insensitive};
+    use super::mini_grep::{search};
 
     #[test]
-    fn one_ok_result() {
-        let query = "duct";
+    fn test_search_sensitive() {
+        let (small_start_query, big_start_query) = ("duct", "Duct");
+        let case_sensitive = true;
         let contents = "\
 Rust:
 safe, fast, productive.
 Pick three.";
-        assert_eq!(
-            vec!["safe, fast, productive."],
-            search(query, contents)
-        );
-    }
+        assert_ne!(vec!["safe, fast, productive."], search(big_start_query, contents, case_sensitive));
 
-    #[test]
-    fn one_failed_result() {
-        let query = "duct";
-        let contents = "\
-Rust:
-safe, fast, productive.
-Pick three.";
-        assert_ne!(
-            vec!["not contains this string"],
-            search(query, contents)
-        );
-    }
+        assert_eq!(vec!["safe, fast, productive."], search(big_start_query, contents, !case_sensitive));
 
-    #[test]
-    fn case_sensitive() {
-        let query = "duct";
-        let contents = "\
-Rust:
-safe, fast, productive.
-Pick three.
-Duct tape.";
+        assert_eq!(vec!["safe, fast, productive."], search(small_start_query, contents, case_sensitive));
 
-        assert_eq!(
-            vec!["safe, fast, productive."],
-            search(query, contents)
-        );
-    }
+        assert_eq!(vec!["safe, fast, productive."], search(small_start_query, contents, !case_sensitive));
 
-    #[test]
-    fn case_insensitive() {
-        let query = "rUsT";
-        let contents = "\
-Rust:
-safe, fast, productive.
-Pick three.
-Trust me.";
-
-        assert_eq!(
-            vec!["Rust:", "Trust me."],
-            search_case_insensitive(query, contents)
-        );
+        assert_ne!(vec!["safe, fast, productive."], search("not contains this string", contents, case_sensitive));
     }
 }
 
@@ -127,6 +90,7 @@ pub mod mini_grep {
     pub struct Config {
         pub query: String,
         pub filename: String,
+        pub case_sensitive: bool,
     }
 
     pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
@@ -134,7 +98,7 @@ pub mod mini_grep {
 
         println!("file content is :\n{}\n", &contents);
 
-        let lines: Vec<&str> = search(&config.query, &contents);
+        let lines: Vec<&str> = search(&config.query, &contents, config.case_sensitive);
 
         println!("there are {} matched lines:", lines.len());
 
@@ -149,27 +113,20 @@ pub mod mini_grep {
             if args.len() < 3 {
                 return Err("not enough arguments");
             }
-            Ok(Config { query: args[1].clone(), filename: args[2].clone() })
+            Ok(Config {
+                query: args[1].clone(),
+                filename: args[2].clone(),
+                case_sensitive: env::var("CASE_INSENSITIVE").is_err(),
+            })
         }
     }
 
-    pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    pub fn search<'a>(query: &str, contents: &'a str, case_sensitive: bool) -> Vec<&'a str> {
         let mut results = Vec::new();
         for line in contents.lines() {
-            if line.contains(query) {
-                results.push(line);
-            }
-        }
-        results
-    }
-
-    pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-        let query = query.to_lowercase();
-        let mut results = Vec::new();
-
-        for line in contents.lines() {
-            if line.to_lowercase().contains(&query) {
-                results.push(line);
+            if (case_sensitive && line.contains(query)) ||
+                (!case_sensitive && line.to_lowercase().contains(query.to_lowercase().as_str())) {
+                results.push(line)
             }
         }
         results
