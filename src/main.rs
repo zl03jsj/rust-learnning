@@ -1,7 +1,6 @@
 #![allow(unused_imports)]
 
-use std::{env, fs};
-use std::fs::File;
+use std::{env, fs, process, io};
 
 
 struct Config {
@@ -12,7 +11,10 @@ struct Config {
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    let config = Config::new(&args);
+    let config: Config = Config::new(&args).unwrap_or_else(|err| {
+        println!("Problem parsing arguments: {}", err);
+        process::exit(1);
+    });
 
     println!("Searching for {}", &config.query);
     println!("In file {}", &config.filename);
@@ -24,7 +26,10 @@ fn main() {
 }
 
 impl Config {
-    fn new(args: &[String]) -> Config {
-        Config { query: args[1].clone(), filename: args[2].clone() }
+    fn new(args: &[String]) -> Result<Config, &'static str> {
+        if args.len() < 3 {
+            return Err("not enough arguments");
+        }
+        Ok(Config { query: args[1].clone(), filename: args[2].clone() })
     }
 }
