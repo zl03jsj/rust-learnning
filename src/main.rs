@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-use std::{env, fs, process, io};
+use std::{env, fs, process, io, error::Error};
 
 
 struct Config {
@@ -19,10 +19,16 @@ fn main() {
     println!("Searching for {}", &config.query);
     println!("In file {}", &config.filename);
 
-    let content: String = fs::read_to_string(config.filename).
-        expect("reading file content error");
+    if let Err(e) = run(config) {
+        println!("Application error: {}", e);
+        process::exit(1);
+    }
+}
 
-    println!("file content is :\n{}", &content);
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.filename)?;
+    println!("file content is :\n{}", &contents);
+    Ok(())
 }
 
 impl Config {
