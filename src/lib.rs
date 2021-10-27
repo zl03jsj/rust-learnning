@@ -27,6 +27,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn run() {
         assert_eq!(3, generics::add(1, 2));
         assert_eq!(3.1, generics::add(1.0, 2.1), "1.0 add 2.1 should equals 3.1");
@@ -58,8 +59,38 @@ mod tests {
         r#match::test_match();
         restaurant::run::eat_at_restaurant();
     }
+
+    use super::*;
+
+    #[test]
+    fn one_ok_result() {
+        let query = "duct";
+        let contents = "\
+Rust:
+safe, fast, productive.
+Pick three.";
+        assert_eq!(
+            vec!["safe, fast, productive."],
+            mini_grep::search(query, contents)
+        );
+    }
+
+    #[test]
+    fn one_failed_result() {
+        let query = "duct";
+        let contents = "\
+Rust:
+safe, fast, productive.
+Pick three.";
+        assert_ne!(
+            vec!["not contains this string"],
+            mini_grep::search(query, contents)
+        );
+    }
 }
 
+// run following command to test mini_grep::search
+// cargo test --package hello_cargo --lib tests -- --test-threads=1 --nocapture cargo
 pub mod mini_grep {
     use std::{env, fs, process, io, error::Error};
 
@@ -70,7 +101,16 @@ pub mod mini_grep {
 
     pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         let contents = fs::read_to_string(config.filename)?;
-        println!("file content is :\n{}", &contents);
+
+        println!("file content is :\n{}\n", &contents);
+
+        let lines: Vec<&str> = search(&config.query, &contents);
+
+        println!("there are {} matched lines:", lines.len());
+
+        for line in lines {
+            println!("> {}", line);
+        }
         Ok(())
     }
 
@@ -81,5 +121,15 @@ pub mod mini_grep {
             }
             Ok(Config { query: args[1].clone(), filename: args[2].clone() })
         }
+    }
+
+    pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+        let mut results = Vec::new();
+        for line in contents.lines() {
+            if line.contains(query) {
+                results.push(line);
+            }
+        }
+        results
     }
 }
