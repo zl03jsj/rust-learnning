@@ -2,7 +2,9 @@
 
 use std::{env, fs, process, io, error::Error};
 
-use hello_cargo::mini_grep::{Config, run};
+pub mod mini_grep;
+
+use mini_grep::{search, Config, run};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
