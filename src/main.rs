@@ -12,19 +12,19 @@ struct Config {
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    let (query, filename) = parse_config(&args);
+    let config = Config::new(&args);
 
-    println!("Searching for {}", query);
-    println!("In file {}", filename);
+    println!("Searching for {}", &config.query);
+    println!("In file {}", &config.filename);
 
-    let content: String = fs::read_to_string(filename).expect("reading file content error");
+    let content: String = fs::read_to_string(config.filename).
+        expect("reading file content error");
 
     println!("file content is :\n{}", &content);
 }
 
-fn parse_config(args: &[String]) -> (&str, &str) {
-    let query = &args[1];
-    let filename = &args[2];
-
-    (query, filename)
+impl Config {
+    fn new(args: &[String]) -> Config {
+        Config { query: args[1].clone(), filename: args[2].clone() }
+    }
 }
