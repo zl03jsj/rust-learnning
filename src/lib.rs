@@ -52,8 +52,6 @@ mod tests {
         string::test_string();
         vector::test_vector();
 
-        // game::start();
-
         r#enum::test_call();
         r#enum::test_ip();
         r#struct::rectangle_area();
@@ -66,6 +64,7 @@ mod tests {
     // run following command to test mini_grep::search
     // cargo test --package hello_cargo --lib tests -- --test-threads=1 --nocapture cargo
     #[test]
+    #[ignore]
     fn test_search_sensitive() {
 
         let (small_start_query, big_start_query) = ("duct", "Duct");
@@ -84,5 +83,16 @@ Pick three.";
 
         assert_ne!(vec!["safe, fast, productive."], search("not contains this string", contents, case_sensitive));
     }
+
+    #[test]
+    fn play_game() {
+        game::start();
+    }
 }
 
+// #[ignore]标记, 默认测试的时候, 测试会被忽略.
+// 需要在命令行指定: `cargo --ignore` 才会测试`#[ignore]`标记的单元测试.
+// cargo test --package hello_cargo --lib tests -- --test-threads=1 --nocapture cargo --ignored
+
+// 指定测试项, 例如: play_game, 由于game需要通过命令行来交互, 需要显示命令行输出, 所以指定了`nocapture`.
+// cargo test --package hello_cargo --lib tests::play_game -- --nocapture
