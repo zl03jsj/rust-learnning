@@ -3,10 +3,13 @@
 use std::{env, fs, process, io, error::Error};
 
 pub mod mini_grep;
+pub mod macros;
 
 use mini_grep::{search, Config, run};
 
 fn main() {
+    macros::use_hi_macro();
+
     let some_number: Option<i32> = None;
     // map_or, 如果some_number不是none, 则将原始值带入后面的函数中(n+1), 否则返回默认值:2
     let x = some_number.map_or(2, |n| n + 1);
